@@ -54,6 +54,13 @@
         left: 0;
         pointer-events: none;
     }
+
+
+    &:focus-within .ilw-org-chart-selected {
+        outline: 2px solid var(--ilw-color--focus--outline);
+        background-color: var(--ilw-color--focus--background);
+        color: var(--ilw-color--focus--text);
+    }
 }
 .level-debug {
     font-family: sans-serif;

@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Org Chart Tree View</title>
+        <link
+            rel="stylesheet"
+            href="https://cdn.brand.illinois.edu/illinois.css"
+        />
+        <link rel="stylesheet" href="https://dev.toolkit.illinois.edu/ilw-global/latest/ilw-global.css">
+        <script type="module" src="./ilw-org-chart.ts"></script>
+        <link rel="stylesheet" href="./ilw-org-chart.css" />
+        <style>
+            #org-chart-config {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: #eee;
+                padding: 10px;
+            }
+            #org-chart-config h2 {
+                margin: 0 0 10px 0;
+            }
+            #org-chart-config > div {
+                display: flex;
+            }
+            #org-chart-config label {
+                display: block;
+                width: 170px;
+            }
+            #org-chart-config input {
+                width: 60px;
+            }
+        </style>
+    </head>
+
+    <body style="margin: 0; padding: 0">
+        <header>
+        <h1 style="text-align: center; margin-top: 1rem">
+            Org Chart Tree View
+        </h1>
+        </header>
+        <main id="holder"></main>
+
+        <script type="module">
+
+
+            /**
+             *
+             * @type {Org}
+             */
+            const org = {
+                title: "Vice Chancellor for Student Affairs",
+                subtitle: "Interim",
+                large: true,
+                children: [
+                    {
+                        title: "Administrative Assistant",
+                        weight: -1,
+                    },
+                    {
+                        title: "Director, Advancement",
+                    },
+                    {
+                        title: "Director, Marketing and Communications",
+                    },
+                    {
+                        title: "Associate Vice Chancellor for Student Success and Engagement",
+                        weight: 1,
+                        large: true,
+                        children: [
+                            {
+                                title: "Sr. Assistant Dean, Fraternity and Sorority Affairs",
+                            },
+                            { title: "Director, Illinois Leadership Center" },
+                            { title: "Director, Minority Student Affairs" },
+                            {
+                                title: "Sr. Assistant Dean, New/Transfer Student Programs",
+                            },
+                            { title: "Director, Testing Center" },
+                            { title: "Director, The Career Center" },
+                        ],
+                    },
+                    {
+                        title: "Associate Vice Chancellor for Auxiliary, Health and Wellbeing",
+                        weight: 1,
+                        large: true,
+                        children: [
+                            { title: "Director, Counseling Center" },
+                            { title: "Director, McKinley Health Center" },
+                            { title: "Director, Parking*" },
+                            {
+                                title: "Director, Auxiliary Shared Technology Services",
+                            },
+                            { title: "Director, State Farm Center**" },
+                            { title: "Director, University Housing" },
+                            { title: "Director, Campus Recreation" },
+                            { title: "Director, Illini Union" },
+                        ],
+                    },
+                    {
+                        title: "Associate Vice Chancellor/Dean of Students",
+                        weight: 1,
+                        large: true,
+                        children: [
+                            { title: "Director, Student Conflict Resolution" },
+                            { title: "Director, Student Legal Services" },
+                            {
+                                title: "Director, Tenant Union and Campus and Community Student Services",
+                            },
+                        ],
+                    },
+                    {
+                        title: "Associate Vice Chancellor for the Office of Inclusion and Intercultural Relations",
+                        weight: 1,
+                        large: true,
+                        children: [
+                            {
+                                title: "Director, Asian American Cultural Center",
+                            },
+                            {
+                                title: "Director, Bruce D. Nesbitt African American Cultural Center",
+                            },
+                            { title: "Director, La Casa Cultural Latina" },
+                            {
+                                title: "Director, Diversity and Social Justice Education",
+                            },
+                            { title: "Director, International Education" },
+                            { title: "Director, LGBT Resource Center" },
+                            { title: "Director, Native American House" },
+                            { title: "Director, Women’s Resources Center" },
+                        ],
+                    },
+                    {
+                        title: "Senior Executive Director for Administrative Services",
+                        weight: 1,
+                        large: true,
+                        children: [
+                            { title: "Director, Assessment and Planning" },
+                            { title: "Director, Budget and Finance" },
+                            { title: "Director, Human Resources" },
+                        ],
+                    },
+                ],
+            };
+
+            const org2 = {
+                title: "Vice Chancellor for Research",
+                large: true,
+                children: [
+                    {
+                        title: "Administrative Assistant",
+                        weight: -1,
+                    },
+                    {
+                        title: "Executive Associate Vice Chancellor/Chief of Staff",
+                    },
+                    {
+                        title: "Associate Vice Chancellor, HR and Finance",
+                        weight: 1,
+                    },
+                    {
+                        title: "Associate Vice Chancellor/Director, Division of Animal Resources",
+                    },
+
+                    {
+                        title: "Executive Director, Strategic Research Communications",
+                        weight: 1,
+                        children: [
+                            {
+                                title: "Proposal Development",
+                            },
+                        ],
+                    },
+                    {
+                        title: "Associate Vice Chancellor, Corporate Relations and Economic Development",
+                    },
+                    {
+                        title: "Senior Director, External Research Partnerships",
+                        weight: 1,
+                    },
+                    {
+                        title: "Associate Vice Chancellor, Humanities, Arts and Related Fields",
+                    },
+                    {
+                        title: "Associate Vice Chancellor",
+                        children: [
+                            {
+                                title: "Sponsored Programs Administration",
+                            },
+                        ],
+                    },
+                    {
+                        title: "Associate Vice Chancellor, Compliance",
+                        children: [
+                            {
+                                title: "Director, Institutional Animal Care and Use Committee",
+                                weight: 2,
+                            },
+                            {
+                                title: "Director, Division of Research Safety",
+                                weight: 2,
+                            },
+                            {
+                                title: "Director, Office for the Protection of Research Subjects",
+                                weight: 2,
+                            },
+                            {
+                                title: "Director, Agricultural Animal Care and Use Program",
+                                weight: 2,
+                            },
+                        ],
+                    },
+                ],
+            };
+            //
+            // const holder = document.getElementById("holder");
+            // let chart = document.createElement("ilw-org-chart");
+            // chart.org = org;
+            // chart.width = "1200";
+            // holder.appendChild(chart);
+            //
+            // chart = document.createElement("ilw-org-chart");
+            // chart.org = org;
+            // chart.width = "400";
+            // holder.appendChild(chart);
+            const holder = document.getElementById("holder");
+
+            let h2 = document.createElement("h2");
+            h2.id = "wide";
+            h2.textContent = "Wide Chart";
+            holder.appendChild(h2);
+            let chart = document.createElement("ilw-org-chart");
+            chart.label = "Wide Chart";
+            chart.org = org2;
+            chart.width = "1000";
+            holder.appendChild(chart);
+
+            h2 = document.createElement("h2");
+            h2.id = "mobile";
+            h2.textContent = "Mobile Chart";
+            holder.appendChild(h2);
+            chart = document.createElement("ilw-org-chart");
+            chart.label = "Mobile Chart";
+            chart.org = org2;
+            chart.width = "600";
+            holder.appendChild(chart);
+        </script>
+    </body>
+</html>

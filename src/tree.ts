@@ -77,9 +77,60 @@ export class TreeLevel {
  */
 export class TreeLevelMap extends Map<number, TreeLevel> {
     root: ConnectedOrg | null = null;
+    primaryOrientation: "horizontal" | "vertical" = "horizontal";
+    orgLookup: Map<number, ConnectedOrg> = new Map();
 
     orderedEntries() {
         return Array.from(this.entries()).sort((a, b) => a[0] - b[0]);
+    }
+
+    findParent(orgId: number): ConnectedOrg | null {
+        const org = this.orgLookup.get(orgId);
+        return org?.parent || null;
+    }
+
+    findNextSibling(orgId: number): ConnectedOrg | null {
+        const org = this.orgLookup.get(orgId);
+        if (!org || !org.parent){
+            return null;
+        }
+
+        const siblings = org.parent.children;
+
+        if (!siblings) {
+            return null;
+        }
+
+        const index = siblings.findIndex((o) => o.id === orgId);
+        if (index >= 0 && index < siblings.length - 1) {
+            return siblings[index + 1];
+        }
+        return null;
+    }
+
+    findPreviousSibling(orgId: number): ConnectedOrg | null {
+        const org = this.orgLookup.get(orgId);
+        if (!org || !org.parent){
+            return null;
+
+        }
+        const siblings = org.parent.children;
+        if (!siblings) {
+            return null;
+        }
+        const index = siblings.findIndex((o) => o.id === orgId);
+        if (index > 0) {
+            return siblings[index - 1];
+        }
+        return null;
+    }
+
+    findFirstChild(orgId: number): ConnectedOrg | null {
+        const org = this.orgLookup.get(orgId);
+        if (!org || !org.children || org.children.length === 0) {
+            return null;
+        }
+        return org.children[0];
     }
 }
 
@@ -106,7 +157,7 @@ export function treeLevelOrgs(org: Org): TreeLevelMap {
         originalIndex: number = 0,
     ): ConnectedOrg {
         const level = currentLevel + (node.weight ?? 0);
-        const connectedNode: ConnectedOrg = {
+        const connectedNode = {
             ...node,
             id: orgIdCount++,
             parent: parent as ConnectedOrg,
@@ -118,6 +169,8 @@ export function treeLevelOrgs(org: Org): TreeLevelMap {
             levelOrgs.set(level, new TreeLevel(level, []));
         }
         levelOrgs.get(level)!.orgs.push(connectedNode);
+        levelOrgs.orgLookup.set(connectedNode.id, connectedNode);
+
         // Replace children with ConnectedOrgs
         if (node.children) {
             const connectedChildren: ConnectedOrg[] = [];
@@ -325,6 +378,19 @@ export function calculateLevelOrientations(
                 }
             }
         }
+    }
+
+    // If all but the top level are vertical, set primaryOrientation to vertical
+    let allButTopVertical = true;
+    for (const [level, treeLevel] of levels.entries()) {
+        if (level === 0) continue;
+        if (treeLevel.orientation !== "vertical") {
+            allButTopVertical = false;
+            break;
+        }
+    }
+    if (allButTopVertical) {
+        levels.primaryOrientation = "vertical";
     }
 }
 
@@ -1062,7 +1128,6 @@ function calculateLinesForOrg(
                         "vertical";
                     const spacing = isChildVerticalLevel ? config.verticalSubtreeSpacing / 2 : config.verticalSpacing / 2;
                     const midY = childPlacement.top - spacing;
-                    console.log("midY", midY, isChildVerticalLevel, spacing);
                     line.points.push({
                         x: (placement.left || 0) + placement.width / 2,
                         y: midY,

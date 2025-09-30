@@ -14,11 +14,6 @@ export default defineConfig({
         },
         rollupOptions: {
             external: [/^@?lit/, /^@illinois-toolkit/],
-            output: {
-                assetFileNames: (chunkInfo) => {
-                    return "[name][extname]"; // vite default
-                },
-            },
         },
     },
     server: {

@@ -1,6 +1,7 @@
 import {
     html,
     LitElement,
+    nothing,
     PropertyValues,
     TemplateResult,
     unsafeCSS,
@@ -35,8 +36,40 @@ export default class OrgChart extends LitElement {
     @property()
     width = "1200";
 
+    @property()
+    label = "";
+
     @query(".ilw-org-chart-canvas")
     canvas!: HTMLCanvasElement;
+
+    /**
+     * Set/get the ID of the currently selected org box.
+     *
+     * This is not a state variable because we don't want to trigger a re-render,
+     * updates to this variable are handled manually.
+     */
+    private _selectedId: number = -1;
+
+    get selectedId(): number {
+        return this._selectedId;
+    }
+    set selectedId(value: number) {
+        const oldValue = this._selectedId;
+        this._selectedId = value;
+
+        const oldOrg = this.querySelector(`#org-${oldValue}`);
+        const newOrg = this.querySelector(`#org-${value}`);
+
+        if (oldOrg && newOrg) {
+            oldOrg.setAttribute("aria-selected", "false");
+            oldOrg.setAttribute("tabindex", "-1");
+            oldOrg.classList.remove("ilw-org-chart-selected");
+            newOrg.setAttribute("aria-selected", "true");
+            newOrg.setAttribute("tabindex", "0");
+            newOrg.classList.add("ilw-org-chart-selected");
+            (newOrg as HTMLElement).focus();
+        }
+    }
 
     static config: OrgChartConfig = {
         horizontalSpacing: 40,
@@ -89,11 +122,127 @@ export default class OrgChart extends LitElement {
         this._treeTask.run();
     }
 
+    private clickHandler(e: MouseEvent, id: number) {
+        this.selectedId = id;
+    }
+
+    private setFocusToPreviousSibling(id: number) {
+        const org = this._treeTask.value?.tree.findPreviousSibling(id);
+        if (org) {
+            this.selectedId = org.id;
+        }
+    }
+
+    private setFocusToNextSibling(id: number) {
+        const org = this._treeTask.value?.tree.findNextSibling(id);
+        if (org) {
+            this.selectedId = org.id;
+        }
+    }
+
+    private setFocusToParent(id: number) {
+        const org = this._treeTask.value?.tree.findParent(id);
+        if (org) {
+            this.selectedId = org.id;
+        }
+
+    }
+    private setFocusToChild(id: number) {
+        const org = this._treeTask.value?.tree.findFirstChild(id);
+        if (org) {
+            this.selectedId = org.id;
+        }
+    }
+
+    private keydownHandler(event: KeyboardEvent, id: number) {
+        let tgt = event.currentTarget,
+            flag = false,
+            key = event.key;
+
+        if (event.altKey || event.ctrlKey || event.metaKey || !this._treeTask.value?.tree.root) {
+            return;
+        }
+
+        const org = this._treeTask.value.tree.orgLookup.get(id);
+        if (!org) {
+            console.warn(`Org with ID ${id} not found in keydownHandler.`);
+            return;
+        }
+
+        const isHorizontal = this._treeTask.value.tree.primaryOrientation === "horizontal";
+
+        switch (key) {
+            case 'Up':
+            case 'ArrowUp':
+                if (isHorizontal) {
+                    this.setFocusToParent(id);
+                } else {
+                    this.setFocusToPreviousSibling(id);
+                }
+                flag = true;
+                break;
+
+            case 'Down':
+            case 'ArrowDown':
+                if (isHorizontal) {
+                    this.setFocusToChild(id);
+                } else {
+                    this.setFocusToNextSibling(id);
+                }
+                flag = true;
+                break;
+
+            case 'Right':
+            case 'ArrowRight':
+                if (isHorizontal) {
+                    this.setFocusToNextSibling(id);
+                } else {
+                    this.setFocusToChild(id);
+                }
+                flag = true;
+                break;
+
+            case 'Left':
+            case 'ArrowLeft':
+                if (isHorizontal) {
+                    this.setFocusToPreviousSibling(id);
+                } else {
+                    this.setFocusToParent(id);
+                }
+                flag = true;
+                break;
+
+            case 'Home':
+                this.selectedId = this._treeTask.value?.tree.root?.id;
+                flag = true;
+                break;
+
+            case 'End':
+                const ordered = this._treeTask.value.tree.orderedEntries();
+                // Walk back from the highest level to find a level that's not empty
+                for (let i = ordered.length - 1; i >= 0; i--) {
+                    const level = ordered[i][1];
+                    if (level.orgs.length > 0) {
+                        this.selectedId = level.orgs[level.orgs.length - 1].id;
+                        break;
+                    }
+                }
+                flag = true;
+                break;
+        }
+
+        if (flag) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+    }
+
     private renderChildren(
+        elementId: string,
         children: ConnectedOrg[],
         placements: Map<number, OrgPlacement>,
     ): TemplateResult {
-        return html`<ul class="org-children">
+        return html`<ul id=${elementId} class="org-children" role="group">
             ${children.map((child) => this.renderOrg(child, placements))}
         </ul>`;
     }
@@ -103,7 +252,7 @@ export default class OrgChart extends LitElement {
         placements: Map<number, OrgPlacement>,
     ): TemplateResult {
         let placement = placements.get(org.id)!;
-        const classes = {
+        const classes: Record<string, boolean> = {
             "ilw-org-chart": true,
             "ilw-org-chart-large": !!org.large,
         };
@@ -113,30 +262,46 @@ export default class OrgChart extends LitElement {
             width: `${placement?.width}px`,
             height: `${placement?.height}px`,
         };
-        return html`<li
-            class="org-container"
-            level=${org.level}
-            id="org-${org.id}"
-            lineskiplevels=${org.lineSkipsLevels}
-        >
-            <div class=${classMap(classes)} style=${styleMap(styles)}>
-                <div class="org-title">${org.title}</div>
-                <div class="org-subtitle">${org.subtitle}</div>
-            </div>
-            ${
-                org.children && org.children.length > 0
-                    ? this.renderChildren(org.children, placements)
-                    : ""
-            }
-        </li>`;
+        const isParent = org.children && org.children.length > 0;
+        const isSelected = this.selectedId === org.id;
+        if (isSelected) {
+            classes["ilw-org-chart-selected"] = true;
+        }
+        return html`
+            <li class="org-container" role="none">
+                <a
+                    id="org-${org.id}"
+                    role="treeitem"
+                    aria-expanded=${isParent ? "true" : nothing}
+                    aria-selected=${isSelected ? "true" : "false"}
+                    tabindex=${isSelected ? "0" : "-1"}
+                    @click=${(e: MouseEvent) => this.clickHandler(e, org.id)}
+                    @keydown=${(e: KeyboardEvent) => this.keydownHandler(e, org.id)}
+                    class=${classMap(classes)} style=${styleMap(styles)}
+                    aria-owns=${isParent ? `org-children-${org.id}` : nothing}
+                    href="#org-${org.id}"
+                >
+                    <span class="org-title">${org.title}</span>
+                    <span class="org-subtitle">${org.subtitle}</span>
+                </a>
+                ${
+                    org.children && org.children.length > 0
+                        ? this.renderChildren(`org-children-${org.id}`, org.children, placements)
+                        : ""
+                }
+            </li>`;
     }
 
     render() {
         if (this._treeTask.value?.tree?.root) {
+            if (this.selectedId === -1) {
+                this.selectedId = this._treeTask.value.tree.root.id;
+            }
             let height = 0;
             for (const placement of this._treeTask.value.measured.values()) {
                 height = Math.max(height, placement.top + placement.height);
             }
+            let primaryOrientation = this._treeTask.value.tree.primaryOrientation;
             return html`<div
                 class="ilw-org-chart-container"
                 style="width: ${this.width}px; height: ${height + 20}px;"
@@ -146,7 +311,7 @@ export default class OrgChart extends LitElement {
                     width=${this.width}
                     height=${height + 20}
                 ></canvas>
-                <ul class="ilw-org-chart-top ${this.theme}">
+                <ul class="ilw-org-chart-top ${this.theme}" aria-label=${this.label} role="tree" aria-orientation="${primaryOrientation}">
                     ${this._treeTask.value
                         ? this.renderOrg(
                               this._treeTask.value.tree.root,
@@ -154,19 +319,6 @@ export default class OrgChart extends LitElement {
                           )
                         : ""}
                 </ul>
-                <div class="level-debug" style="left: ${this.width}px;">
-                <h2>Level Debug Info</h2>
-                    ${Array.from(this._treeTask.value.tree.entries()).map(
-                        ([level, entry]: [number, TreeLevel], index: number) =>
-                            html`<div>
-                                <h3>Level ${level} (${entry.orgs.length} orgs):</h3>
-                                Orientation: ${entry.orientation}<br />
-                                Right Skip: ${entry.rightSkipLine}<br />
-                                Left Skip: ${entry.leftSkipLine}<br />
-                                Empty Spaces: ${entry.emptySpaces.map((space) => Math.floor(space.start) + "-" + Math.floor(space.end)).join(", ")}<br />
-                            </div>`,
-                    )}
-                </div>
             </div>`;
         } else {
             return html`<div>No organization data provided.</div>`;
