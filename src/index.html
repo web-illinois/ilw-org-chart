@@ -40,11 +40,47 @@
         <h1 style="text-align: center; margin-top: 1rem">
             Org Chart Tree View
         </h1>
+            <form id="org-chart-config" aria-labelledby="org-chart-config-label">
+                <h2 id="org-chart-config-label">Config</h2>
+
+            </form>
         </header>
         <main id="holder"></main>
 
         <script type="module">
+            import OrgChart from "/src/ilw-org-chart.js";
 
+            for (let [key, val] of Object.entries(OrgChart.config)) {
+                const holder = document.createElement("div");
+                const label = document.createElement("label");
+                label.textContent = key;
+                label.setAttribute("for", key);
+                holder.appendChild(label);
+                const input = document.createElement("input");
+                input.type = "text";
+                input.value = val;
+                input.id = key;
+                holder.appendChild(input);
+                document.getElementById("org-chart-config").appendChild(holder);
+                input.addEventListener("change", (e) => {
+                    const inp = e.target;
+                    if (inp && inp.id && inp.value) {
+                        if (typeof val === "number") {
+                            OrgChart.config[inp.id] = parseFloat(inp.value);
+                        } else {
+                            OrgChart.config[inp.id] = inp.value;
+                        }
+                        document.querySelectorAll("ilw-org-chart").forEach((chart) => {
+                            console.log(chart);
+                            chart.refreshTask();
+                            setTimeout(() => {
+                                chart.requestUpdate();
+                            }, 100);
+
+                        });
+                    }
+                });
+            }
 
             /**
              *

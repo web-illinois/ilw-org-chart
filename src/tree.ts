@@ -508,7 +508,7 @@ export function measureOrgBoxes(
             // Divide the space so that large orgs get a bit more space
             const totalUnits =
                 largeOrgs.length * config.largeOrgSizeMultiplier +
-                smallOrgs.length * 1.0;
+                smallOrgs.length;
             const unitWidth =
                 (realAvailableSpace -
                     (totalUnits - 1) * config.horizontalSpacing) /
@@ -516,14 +516,15 @@ export function measureOrgBoxes(
             const largeOrgWidth = Math.min(
                 Math.max(
                     unitWidth * config.largeOrgSizeMultiplier,
-                    config.minColWidth,
+                    config.minColWidth * config.largeOrgSizeMultiplier,
                 ),
-                config.maxColWidth,
+                config.maxColWidth * config.largeOrgSizeMultiplier,
             );
             let smallOrgWidth = Math.min(
                 Math.max(unitWidth * 1.0, config.minColWidth),
                 config.maxColWidth,
             );
+            console.log("totalUnits, unitWidth, largeOrgWidth, smallOrgWidth", totalUnits, unitWidth, largeOrgWidth, smallOrgWidth);
 
             levelContainer.style.width = realAvailableSpace + "px";
             container.appendChild(levelContainer);

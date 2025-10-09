@@ -74,7 +74,7 @@ export default class OrgChart extends LitElement {
     static config: OrgChartConfig = {
         horizontalSpacing: 40,
         availableSpace: 1200,
-        largeOrgSizeMultiplier: 1.5,
+        largeOrgSizeMultiplier: 1.2,
         verticalChildOffset: 20,
         verticalSpacing: 30,
         verticalSubtreeSpacing: 20,

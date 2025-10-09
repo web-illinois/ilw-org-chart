@@ -8,10 +8,7 @@
             rel="stylesheet"
             href="https://cdn.brand.illinois.edu/illinois.css"
         />
-        <link
-            rel="stylesheet"
-            href="https://dev.toolkit.illinois.edu/ilw-global/3.0.0-alpha/ilw-global.css"
-        />
+        <link rel="stylesheet" href="https://dev.toolkit.illinois.edu/ilw-global/latest/ilw-global.css">
         <script type="module" src="/src/ilw-org-chart.ts"></script>
         <style>
             #org-chart-config {
@@ -47,7 +44,7 @@
 
         </form>
         </header>
-        <main id="holder"></div>
+        <main id="holder"></main>
 
         <script type="module">
             import OrgChart from "/src/ilw-org-chart.js";
@@ -68,7 +65,7 @@
                     const inp = e.target;
                     if (inp && inp.id && inp.value) {
                         if (typeof val === "number") {
-                            OrgChart.config[inp.id] = parseInt(inp.value);
+                            OrgChart.config[inp.id] = parseFloat(inp.value);
                         } else {
                             OrgChart.config[inp.id] = inp.value;
                         }
@@ -257,20 +254,20 @@
             chart.width = "1200";
             holder.appendChild(chart);
 
-            chart = document.createElement("ilw-org-chart");
-            chart.org = org;
-            chart.width = "400";
-            holder.appendChild(chart);
-
-            chart = document.createElement("ilw-org-chart");
-            chart.org = org2;
-            chart.width = "1000";
-            holder.appendChild(chart);
-
-            chart = document.createElement("ilw-org-chart");
-            chart.org = org2;
-            chart.width = "600";
-            holder.appendChild(chart);
+            // chart = document.createElement("ilw-org-chart");
+            // chart.org = org;
+            // chart.width = "400";
+            // holder.appendChild(chart);
+            //
+            // chart = document.createElement("ilw-org-chart");
+            // chart.org = org2;
+            // chart.width = "1000";
+            // holder.appendChild(chart);
+            //
+            // chart = document.createElement("ilw-org-chart");
+            // chart.org = org2;
+            // chart.width = "600";
+            // holder.appendChild(chart);
         </script>
     </body>
 </html>
