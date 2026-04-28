@@ -9,7 +9,7 @@ Links: **[ilw-org-chart in Builder](https://builder3.toolkit.illinois.edu/compon
 This component renders an organization chart based on simple JSON of the organization's
 entities. The only required data is the title and parent for each entity. Here's a
 minimal example:
-
+ 
 ```json
 {
     "title": "Vice Chancellor for Student Affairs",

@@ -1,11 +1,12 @@
 .ilw-org-chart {
-    background-color: #13294B;
-    color: #fff;
-    font-family: sans-serif;
+    background-color: var(--ilw-color--heading);
+    color: var(--ilw-color--background);
+    font-family: var(--il-font-sans);
     padding: 10px;
     box-sizing: border-box;
     text-align: center;
     font-size: 16px;
+    text-decoration: none;
 }
 .ilw-org-chart-large {
     font-size: 18px;
@@ -32,6 +33,7 @@
 }
 .ilw-org-chart-container {
     position: relative;
+    background-color: var(--ilw-color--background);
     .ilw-org-chart {
         display: flex;
         justify-content: center;

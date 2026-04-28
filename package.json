@@ -1,10 +1,10 @@
 {
     "name": "@illinois-toolkit/ilw-org-chart",
-    "description": "One paragraph description of the component.",
-    "repository": "github:marvel-uiuc/ilw-org-chart",
+    "description": "An org chart web component for the Illinois Web Toolkit.",
+    "repository": "github:web-illinois/ilw-org-chart",
     "private": false,
     "license": "MIT",
-    "version": "0.0.1",
+    "version": "1.0.0-alpha0",
     "type": "module",
     "files": [
         "src/**",

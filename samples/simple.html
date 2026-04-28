@@ -10,75 +10,13 @@
         />
         <link rel="stylesheet" href="https://cdn.toolkit.illinois.edu/ilw-global/3/ilw-global.css">
         <script type="module" src="/src/ilw-org-chart.ts"></script>
-        <style>
-            #org-chart-config {
-                position: fixed;
-                top: 10px;
-                right: 10px;
-                background: #eee;
-                padding: 10px;
-            }
-            #org-chart-config h2 {
-                margin: 0 0 10px 0;
-            }
-            #org-chart-config > div {
-                display: flex;
-            }
-            #org-chart-config label {
-                display: block;
-                width: 170px;
-            }
-            #org-chart-config input {
-                width: 60px;
-            }
-        </style>
     </head>
 
     <body style="margin: 0; padding: 0">
-        <header>
-        <h1 style="text-align: center; margin-top: 1rem">
-            Org Chart Component
-        </h1>
-        <form id="org-chart-config" aria-labelledby="org-chart-config-label">
-            <h2 id="org-chart-config-label">Config</h2>
 
-        </form>
-        </header>
         <main id="holder"></main>
 
         <script type="module">
-            import OrgChart from "/src/ilw-org-chart.js";
-
-            for (let [key, val] of Object.entries(OrgChart.config)) {
-                const holder = document.createElement("div");
-                const label = document.createElement("label");
-                label.textContent = key;
-                label.setAttribute("for", key);
-                holder.appendChild(label);
-                const input = document.createElement("input");
-                input.type = "text";
-                input.value = val;
-                input.id = key;
-                holder.appendChild(input);
-                document.getElementById("org-chart-config").appendChild(holder);
-                input.addEventListener("change", (e) => {
-                    const inp = e.target;
-                    if (inp && inp.id && inp.value) {
-                        if (typeof val === "number") {
-                            OrgChart.config[inp.id] = parseFloat(inp.value);
-                        } else {
-                            OrgChart.config[inp.id] = inp.value;
-                        }
-                        document.querySelectorAll("ilw-org-chart").forEach((chart) => {
-                            console.log(chart);
-                            chart.refreshTask();
-                            chart.requestUpdate();
-                        });
-                    }
-                });
-            }
-
-
             /**
              *
              * @type {Org}
@@ -254,21 +192,6 @@
             chart.org = org2;
             chart.width = "1200";
             holder.appendChild(chart);
-
-            // chart = document.createElement("ilw-org-chart");
-            // chart.org = org;
-            // chart.width = "400";
-            // holder.appendChild(chart);
-            //
-            // chart = document.createElement("ilw-org-chart");
-            // chart.org = org2;
-            // chart.width = "1000";
-            // holder.appendChild(chart);
-            //
-            // chart = document.createElement("ilw-org-chart");
-            // chart.org = org2;
-            // chart.width = "600";
-            // holder.appendChild(chart);
         </script>
     </body>
 </html>

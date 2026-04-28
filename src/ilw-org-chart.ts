@@ -331,7 +331,7 @@ export default class OrgChart extends LitElement {
         const ctx = this.canvas?.getContext("2d");
         if (ctx) {
             ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            ctx.strokeStyle = "#000000";
+            ctx.strokeStyle = this.theme == '' || this.theme == 'white' ? "#000000" : "#ffffff";
             ctx.lineWidth = 4;
 
             if (this._treeTask.value?.lines) {
