@@ -1,0 +1,13 @@
+name: component_issue
+on:
+  issues:
+    types: [opened, labeled, reopened] 
+jobs:
+  build:
+      permissions:
+        contents: read
+        pull-requests: write
+        id-token: write  
+      uses: web-illinois/toolkit-management/.github/workflows/component_issue.yml@main
+      secrets:
+        TOOLKIT_PROJECT_PAT_CLASSIC: ${{ secrets.TOOLKIT_PROJECT_PAT_CLASSIC }}
