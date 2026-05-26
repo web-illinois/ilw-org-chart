@@ -33,8 +33,11 @@ export default class OrgChart extends LitElement {
     @property()
     org: Org | null = null;
 
-    @property()
-    width = "1200";
+    @property({type: Number, reflect: true})
+    width = 1200;
+
+    @property({type: Boolean})
+    responsive = false;
 
     @property()
     label = "";
@@ -88,7 +91,8 @@ export default class OrgChart extends LitElement {
             if (!org) {
                 return null;
             }
-            OrgChart.config.availableSpace = parseInt(this.width);
+            this.setResponsiveWidth();
+            OrgChart.config.availableSpace = this.width;
             const tree = treeLevelOrgs(org);
             calculateLevelOrientations(tree, OrgChart.config);
             const measured = measureOrgBoxes(
@@ -110,8 +114,15 @@ export default class OrgChart extends LitElement {
         args: () => [this.org] as const,
     });
 
-    constructor() {
-        super();
+    connectedCallback() {
+        console.log('connectedCallback called');
+        super.connectedCallback();
+        window.addEventListener("resize", this.setResponsiveWidthAndRebuild.bind(this));
+    }
+
+    disconnectedCallback() {
+        window.removeEventListener("resize", this.setResponsiveWidthAndRebuild.bind(this));
+        super.disconnectedCallback();
     }
 
     createRenderRoot() {
@@ -132,6 +143,20 @@ export default class OrgChart extends LitElement {
             this.selectedId = org.id;
         }
     }
+
+    private setResponsiveWidth() {
+        if (this.responsive) {
+            this.width = Math.floor(this.offsetWidth);
+        }
+    }
+
+    private setResponsiveWidthAndRebuild() {
+        if (this.responsive) {
+            this.setResponsiveWidth();
+            this.refreshTask();
+        }
+    }
+
 
     private setFocusToNextSibling(id: number) {
         const org = this._treeTask.value?.tree.findNextSibling(id);
@@ -298,6 +323,8 @@ export default class OrgChart extends LitElement {
                 this.selectedId = this._treeTask.value.tree.root.id;
             }
             let height = 0;
+            this.setResponsiveWidth();
+
             for (const placement of this._treeTask.value.measured.values()) {
                 height = Math.max(height, placement.top + placement.height);
             }

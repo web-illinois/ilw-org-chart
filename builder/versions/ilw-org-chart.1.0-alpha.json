@@ -33,7 +33,23 @@
                 "orange",
                 "white"
             ]
+        },
+                {
+            "name": "width",
+            "description": "Width of the org chart (defaults to 1200)",
+            "depreciated": false,
+            "value": "1200"
+        },
+                {
+            "name": "responsive",
+            "description": "Enable responsive mode (defaults to false) -- if responsive mode is enabled, it will overwrite the width attribute",
+            "depreciated": false,
+            "values": [
+                "",
+                "true"
+            ]
         }
+
     ],
     "classes-fixed": [],
     "classes": [],
