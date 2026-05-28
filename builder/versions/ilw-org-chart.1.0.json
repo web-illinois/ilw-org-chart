@@ -5,11 +5,11 @@
     "type": "web component",
     "element-name": "ilw-org-chart",
     "description": "Organization chart web component for the Illinois Web Toolkit.",
-    "builder-version": "1.0-alpha",
-    "version": "1.0.0-alpha",
+    "builder-version": "1.0",
+    "version": "1.0.0",
     "date": "09/11/2025",
-    "css": "https://dev.toolkit.illinois.edu/ilw-org-chart/1.0.0-alpha/ilw-org-chart.css",
-    "js": "https://dev.toolkit.illinois.edu/ilw-org-chart/1.0.0-alpha/ilw-org-chart.js",
+    "css": "https://cdn.toolkit.illinois.edu/ilw-org-chart/1.0/ilw-org-chart.css",
+    "js": "https://cdn.toolkit.illinois.edu/ilw-org-chart/1.0/ilw-org-chart.js",
     "production": false,
     "notes": "",
     "parent-style": "",
@@ -31,7 +31,8 @@
                 "",
                 "blue",
                 "orange",
-                "white"
+                "white",
+                "gray"
             ]
         },
                 {
@@ -40,7 +41,7 @@
             "depreciated": false,
             "value": "1200"
         },
-                {
+        {
             "name": "responsive",
             "description": "Enable responsive mode (defaults to false) -- if responsive mode is enabled, it will overwrite the width attribute",
             "depreciated": false,
@@ -48,8 +49,16 @@
                 "",
                 "true"
             ]
+        },
+        {
+            "name": "hidelines",
+            "description": "Hide lines (defaults to false) -- cannot be used in responsive mode",
+            "depreciated": false,
+            "values": [
+                "",
+                "true"
+            ]
         }
-
     ],
     "classes-fixed": [],
     "classes": [],

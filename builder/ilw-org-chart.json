@@ -4,9 +4,9 @@
     "github": "https://github.com/web-illinois/ilw-org-chart/",
     "type": "web component",
     "element-name": "ilw-org-chart",
-    "description": "Description for builder.",
-    "purpose": "Imperative mood purpose for builder homepage.",
-    "toolkit-version": "",
-    "production-version": "",
+    "description": "Organization chart web component for the Illinois Web Toolkit.",
+    "purpose": "Build an org chart",
+    "toolkit-version": "1.0",
+    "production-version": "1.0",
     "development-version": "1.0-alpha"
 }

@@ -39,6 +39,9 @@ export default class OrgChart extends LitElement {
     @property({type: Boolean})
     responsive = false;
 
+    @property({type: Boolean})
+    hidelines = false;
+
     @property()
     label = "";
 
@@ -358,10 +361,14 @@ export default class OrgChart extends LitElement {
         const ctx = this.canvas?.getContext("2d");
         if (ctx) {
             ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            ctx.strokeStyle = this.theme == '' || this.theme == 'white' ? "#000000" : "#ffffff";
+            ctx.strokeStyle = this.theme == '' || (this.theme == 'white' || this.theme == 'gray')? "#000000" : "#ffffff";
             ctx.lineWidth = 4;
+            let displayLines = !this.hidelines;
+            if (this.responsive) {
+                displayLines = true;
+            }
 
-            if (this._treeTask.value?.lines) {
+            if (displayLines && this._treeTask.value?.lines) {
                 for (const line of this._treeTask.value.lines) {
                     ctx.beginPath();
                     let start = line.points[0];
