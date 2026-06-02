@@ -8,6 +8,6 @@
     "purpose": "Build an org chart",
     "toolkit-version": "1.0",
     "production-version": "1.0",
-    "development-version": "1.0-alpha",
+    "development-version": "latest",
     "builder-override-link": "/notes/orgchart/index.html"
 }
