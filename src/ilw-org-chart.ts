@@ -33,8 +33,8 @@ export default class OrgChart extends LitElement {
     @property()
     org: Org | null = null;
 
-    @property({type: Number, reflect: true})
-    width = 1200;
+    @property({type: Number})
+    width: number | null = null;
 
     @property({type: Boolean})
     responsive = false;
@@ -47,6 +47,11 @@ export default class OrgChart extends LitElement {
 
     @query(".ilw-org-chart-canvas")
     canvas!: HTMLCanvasElement;
+
+    @state()
+    responsiveWidth = this.clientWidth;
+
+    private resizeObserver: ResizeObserver | null = null;
 
     /**
      * Set/get the ID of the currently selected org box.
@@ -90,41 +95,79 @@ export default class OrgChart extends LitElement {
     };
 
     _treeTask = new Task(this, {
-        task: async ([org]) => {
+        // This task should never use "this", but rather pass
+        // the necessary values as args
+        args: () =>
+            [
+                this.org,
+                this.responsive,
+                this.width,
+                this.responsiveWidth,
+            ] as const,
+        task: async ([org, responsive, width, responsiveWidth]) => {
             if (!org) {
                 return null;
             }
-            this.setResponsiveWidth();
-            OrgChart.config.availableSpace = this.width;
+            let useWidth = width || 1200;
+            if (responsive) {
+                useWidth = responsiveWidth;
+            }
+
+            if (useWidth < OrgChart.config.minColWidth) {
+                useWidth =
+                    OrgChart.config.minColWidth +
+                    2 * OrgChart.config.horizontalSpacing;
+            }
+
+            const config = {
+                ...OrgChart.config,
+                availableSpace: useWidth,
+            };
+
             const tree = treeLevelOrgs(org);
-            calculateLevelOrientations(tree, OrgChart.config);
-            const measured = measureOrgBoxes(
-                tree,
-                "ilw-org-chart",
-                OrgChart.config,
-            );
-            const lines = calculateLinesBetweenOrgs(
-                tree,
-                measured,
-                OrgChart.config,
-            );
+            calculateLevelOrientations(tree, config);
+            const measured = measureOrgBoxes(tree, "ilw-org-chart", config);
+            const lines = calculateLinesBetweenOrgs(tree, measured, config);
             return {
                 tree,
                 measured,
                 lines,
+                width: useWidth,
             };
         },
-        args: () => [this.org] as const,
     });
 
     connectedCallback() {
-        console.log('connectedCallback called');
         super.connectedCallback();
-        window.addEventListener("resize", this.setResponsiveWidthAndRebuild.bind(this));
+        this.syncResponsiveObserver();
     }
 
+    private updateResponsiveWidth = () => {
+        if (this.responsive) {
+            this.responsiveWidth = this.clientWidth;
+        }
+    };
+
+    private syncResponsiveObserver = () => {
+        if (this.responsive) {
+            if (!this.resizeObserver) {
+                this.responsiveWidth = this.clientWidth;
+                this.resizeObserver = new ResizeObserver(
+                    this.updateResponsiveWidth,
+                );
+                this.resizeObserver.observe(this);
+            }
+        } else if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+            this.resizeObserver = null;
+            this.responsiveWidth = 1200;
+            this.refreshTask();
+        }
+    };
+
     disconnectedCallback() {
-        window.removeEventListener("resize", this.setResponsiveWidthAndRebuild.bind(this));
+        this.resizeObserver?.disconnect();
+        this.resizeObserver = null;
         super.disconnectedCallback();
     }
 
@@ -147,20 +190,6 @@ export default class OrgChart extends LitElement {
         }
     }
 
-    private setResponsiveWidth() {
-        if (this.responsive) {
-            this.width = Math.floor(this.offsetWidth);
-        }
-    }
-
-    private setResponsiveWidthAndRebuild() {
-        if (this.responsive) {
-            this.setResponsiveWidth();
-            this.refreshTask();
-        }
-    }
-
-
     private setFocusToNextSibling(id: number) {
         const org = this._treeTask.value?.tree.findNextSibling(id);
         if (org) {
@@ -173,7 +202,6 @@ export default class OrgChart extends LitElement {
         if (org) {
             this.selectedId = org.id;
         }
-
     }
     private setFocusToChild(id: number) {
         const org = this._treeTask.value?.tree.findFirstChild(id);
@@ -295,29 +323,31 @@ export default class OrgChart extends LitElement {
         if (isSelected) {
             classes["ilw-org-chart-selected"] = true;
         }
-        return html`
-            <li class="org-container" role="none">
-                <a
-                    id="org-${org.id}"
-                    role="treeitem"
-                    aria-expanded=${isParent ? "true" : nothing}
-                    aria-selected=${isSelected ? "true" : "false"}
-                    tabindex=${isSelected ? "0" : "-1"}
-                    @click=${(e: MouseEvent) => this.clickHandler(e, org.id)}
-                    @keydown=${(e: KeyboardEvent) => this.keydownHandler(e, org.id)}
-                    class=${classMap(classes)} style=${styleMap(styles)}
-                    aria-owns=${isParent ? `org-children-${org.id}` : nothing}
-                    href="#org-${org.id}"
-                >
-                    <span class="org-title">${org.title}</span>
-                    <span class="org-subtitle">${org.subtitle}</span>
-                </a>
-                ${
-                    org.children && org.children.length > 0
-                        ? this.renderChildren(`org-children-${org.id}`, org.children, placements)
-                        : ""
-                }
-            </li>`;
+        return html` <li class="org-container" role="none">
+            <a
+                id="org-${org.id}"
+                role="treeitem"
+                aria-expanded=${isParent ? "true" : nothing}
+                aria-selected=${isSelected ? "true" : "false"}
+                tabindex=${isSelected ? "0" : "-1"}
+                @click=${(e: MouseEvent) => this.clickHandler(e, org.id)}
+                @keydown=${(e: KeyboardEvent) => this.keydownHandler(e, org.id)}
+                class=${classMap(classes)}
+                style=${styleMap(styles)}
+                aria-owns=${isParent ? `org-children-${org.id}` : nothing}
+                href="#org-${org.id}"
+            >
+                <span class="org-title">${org.title}</span>
+                <span class="org-subtitle">${org.subtitle}</span>
+            </a>
+            ${org.children && org.children.length > 0
+                ? this.renderChildren(
+                      `org-children-${org.id}`,
+                      org.children,
+                      placements,
+                  )
+                : ""}
+        </li>`;
     }
 
     render() {
@@ -325,8 +355,8 @@ export default class OrgChart extends LitElement {
             if (this.selectedId === -1) {
                 this.selectedId = this._treeTask.value.tree.root.id;
             }
+            let width = this._treeTask.value.width;
             let height = 0;
-            this.setResponsiveWidth();
 
             for (const placement of this._treeTask.value.measured.values()) {
                 height = Math.max(height, placement.top + placement.height);
@@ -334,14 +364,21 @@ export default class OrgChart extends LitElement {
             let primaryOrientation = this._treeTask.value.tree.primaryOrientation;
             return html`<div
                 class="ilw-org-chart-container"
-                style="width: ${this.width}px; height: ${height + 20}px;"
+                style="width: ${width}px; height: ${height + 20}px;"
             >
-                <canvas
-                    class="ilw-org-chart-canvas"
-                    width=${this.width}
-                    height=${height + 20}
-                ></canvas>
-                <ul class="ilw-org-chart-top ${this.theme}" aria-label=${this.label} role="tree" aria-orientation="${primaryOrientation}">
+                ${!this.hidelines
+                    ? html`<canvas
+                          class="ilw-org-chart-canvas"
+                          width=${width}
+                          height=${height + 20}
+                      ></canvas>`
+                    : nothing}
+                <ul
+                    class="ilw-org-chart-top ${this.theme}"
+                    aria-label=${this.label}
+                    role="tree"
+                    aria-orientation="${primaryOrientation}"
+                >
                     ${this._treeTask.value
                         ? this.renderOrg(
                               this._treeTask.value.tree.root,
@@ -358,17 +395,17 @@ export default class OrgChart extends LitElement {
     protected updated(_changedProperties: PropertyValues): void {
         super.updated(_changedProperties);
 
+        if (_changedProperties.has("responsive")) {
+            this.syncResponsiveObserver();
+        }
+
         const ctx = this.canvas?.getContext("2d");
         if (ctx) {
             ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             ctx.strokeStyle = this.theme == '' || (this.theme == 'white' || this.theme == 'gray')? "#000000" : "#ffffff";
             ctx.lineWidth = 4;
-            let displayLines = !this.hidelines;
-            if (this.responsive) {
-                displayLines = true;
-            }
 
-            if (displayLines && this._treeTask.value?.lines) {
+            if (this._treeTask.value?.lines) {
                 for (const line of this._treeTask.value.lines) {
                     ctx.beginPath();
                     let start = line.points[0];
