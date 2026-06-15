@@ -411,7 +411,6 @@ export function measureOrgBoxes(
     cssClass: string,
     config: OrgChartConfig,
 ) {
-    console.log("[measureOrgBoxes] Start measuring org boxes", levelsMap);
     const startTime = performance.now();
 
     // Create hidden container
@@ -524,7 +523,6 @@ export function measureOrgBoxes(
                 Math.max(unitWidth * 1.0, config.minColWidth),
                 config.maxColWidth,
             );
-            console.log("totalUnits, unitWidth, largeOrgWidth, smallOrgWidth", totalUnits, unitWidth, largeOrgWidth, smallOrgWidth);
 
             levelContainer.style.width = realAvailableSpace + "px";
             container.appendChild(levelContainer);
@@ -629,12 +627,6 @@ export function measureOrgBoxes(
     document.body.removeChild(container);
     const endTime = performance.now();
     const duration = endTime - startTime;
-    console.log(
-        `[measureOrgBoxes] Finished measuring. Duration: ${duration.toFixed(2)} ms`,
-        orgSizes,
-    );
-    console.log("[measureOrgBoxes] Measured org sizes:", orgSizes);
-    console.log("[measureOrgBoxes] Updated placements:", updated);
 
     return orgSizes;
 }
@@ -997,6 +989,115 @@ function calculateLinesForOrg(
         const orgIsLastInLevel =
             orgLevelObj?.orgs[orgLevelObj.orgs.length - 1] === org;
 
+        // The best corridor should only be used if there is a single parent
+        // in the horizontal level. If there are more, fall back to the edge.
+        const uniqueParentsInLevel = new Set<number>();
+        for (const levelOrg of orgLevelObj?.orgs ?? []) {
+            if (levelOrg.parent) {
+                uniqueParentsInLevel.add(levelOrg.parent.id);
+            }
+        }
+        const singleParentInLevel = uniqueParentsInLevel.size <= 1;
+
+        const centerX = (placement.left || 0) + placement.width / 2;
+        const parentLeft = placement.left || 0;
+        const parentRight = parentLeft + placement.width;
+
+        const findBestCorridorMidpoint = (
+            intervals: { start: number; end: number }[],
+            preferredX: number,
+        ) => {
+            let bestX: number | null = null;
+            let bestDistance = Infinity;
+            for (const interval of intervals) {
+                const midpoint = (interval.start + interval.end) / 2;
+                const distance = Math.abs(midpoint - preferredX);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    bestX = midpoint;
+                }
+            }
+            return bestX;
+        };
+
+        const intersectIntervals = (
+            a: { start: number; end: number }[],
+            b: { start: number; end: number }[],
+        ) => {
+            const intersections: { start: number; end: number }[] = [];
+            for (const ia of a) {
+                for (const ib of b) {
+                    const start = Math.max(ia.start, ib.start);
+                    const end = Math.min(ia.end, ib.end);
+                    if (end > start) {
+                        intersections.push({ start, end });
+                    }
+                }
+            }
+            return intersections;
+        };
+
+        const findSkipStartX = (targetLevel: number) => {
+            let safeCorridors: { start: number; end: number }[] = [
+                { start: 0, end: config.availableSpace },
+            ];
+            for (let levelNum = org.level + 1; levelNum < targetLevel; levelNum++) {
+                const level = levelsMap.get(levelNum);
+                if (!level || !level.emptySpaces || level.emptySpaces.length === 0) {
+                    continue;
+                }
+                safeCorridors = intersectIntervals(safeCorridors, level.emptySpaces);
+                if (safeCorridors.length === 0) {
+                    break;
+                }
+            }
+
+            if (singleParentInLevel && safeCorridors.length > 0) {
+                const corridorsInsideParent = intersectIntervals(safeCorridors, [
+                    { start: parentLeft, end: parentRight },
+                ]);
+                const bestInsideParent = findBestCorridorMidpoint(
+                    corridorsInsideParent,
+                    centerX,
+                );
+                const bestOverall = findBestCorridorMidpoint(
+                    safeCorridors,
+                    centerX,
+                );
+                return bestInsideParent ?? bestOverall ?? centerX;
+            }
+
+            if (orgIsLastInLevel) {
+                return (
+                    (placement.left || 0) +
+                    placement.width -
+                    config.skipLineExtraSpacing / 2
+                );
+            }
+            if (orgIsFirstInLevel) {
+                return (placement.left || 0) + config.skipLineExtraSpacing / 2;
+            }
+            return centerX;
+        };
+
+        let sharedDownStartX: number | null = null;
+        if (org.lineSkipsLevels && org.lineSkipsLevels > 0) {
+            const childrenWithPlacement = org.children
+                .map((child) => ({ child, childPlacement: placements.get(child.id) }))
+                .filter(
+                    (entry): entry is { child: ConnectedOrg; childPlacement: OrgPlacement } =>
+                        !!entry.childPlacement && entry.child.level > org.level,
+                );
+
+            if (childrenWithPlacement.length > 0) {
+                childrenWithPlacement.sort(
+                    (a, b) =>
+                        (b.child.level - org.level) - (a.child.level - org.level),
+                );
+                sharedDownStartX = findSkipStartX(childrenWithPlacement[0].child.level);
+            }
+        }
+
         for (const child of org.children) {
             const childPlacement = placements.get(child.id);
             const isChildVerticalLevel =
@@ -1017,49 +1118,7 @@ function calculateLinesForOrg(
                         y: childPlacement.top + childPlacement.height / 2,
                     });
                 } else if (org.lineSkipsLevels && org.lineSkipsLevels > 0) {
-                    // Start the line half of skipLineExtraSpacing from the edge of parent
-                    let startX: number;
-
-                    const level = levelsMap.get(org.level + 1)!;
-                    // If the line skips levels, but it's not skipping at the edges,
-                    // we want to start the line from the closest gap to the center of the org
-                    if (!level?.leftSkipLine && !level?.rightSkipLine) {
-                        // Find the closest gap to the center of the org
-                        const emptySpaces = level.emptySpaces || [];
-                        const centerX =
-                            (placement.left || 0) + placement.width / 2;
-                        let closestGap: { start: number; end: number } | null =
-                            null;
-                        let closestDistance = Infinity;
-                        for (const gap of emptySpaces) {
-                            const gapCenter = (gap.start + gap.end) / 2;
-                            const distance = Math.abs(gapCenter - centerX);
-                            if (distance < closestDistance) {
-                                closestDistance = distance;
-                                closestGap = gap;
-                            }
-                        }
-                        if (closestGap) {
-                            startX = (closestGap.start + closestGap.end) / 2;
-                        } else {
-                            startX = centerX; // fallback
-                        }
-                    } else if (orgIsLastInLevel) {
-                        // Start from the right edge of the org
-                        startX =
-                            (placement.left || 0) +
-                            placement.width -
-                            config.skipLineExtraSpacing / 2;
-                    } else if (orgIsFirstInLevel) {
-                        // Start from the left edge of the org
-                        startX =
-                            (placement.left || 0) +
-                            config.skipLineExtraSpacing / 2;
-                    } else {
-                        // Fallback to center
-                        startX =
-                            (placement.left || 0) + placement.width / 2;
-                    }
+                    const startX = sharedDownStartX ?? findSkipStartX(child.level);
 
                     line.points.push({
                         x: startX,

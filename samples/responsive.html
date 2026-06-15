@@ -10,189 +10,114 @@
         />
         <link rel="stylesheet" href="https://cdn.toolkit.illinois.edu/ilw-global/3/ilw-global.css">
         <script type="module" src="/src/ilw-org-chart.ts"></script>
-    </head>
 
-    <body>
+            <script type="module">
+                document.getElementById("org-chart").org = {
+                    "title": "Executive Sponsor",
+                    "large": true,
+                    "children": [
+                        {
+                            "title": "Institutional Data Governance Board",
+                            "large": true,
+                            "children": [
+                                {
+                                    "title": "DSC – Advancement, Alumni, and Foundation Data"
+                                },
+                                {
+                                    "title": "DSC – Financial Data"
+                                },
+                                {
+                                    "title": "DSC – Human Resources Data"
+                                },
+                                {
+                                    "title": "DSC – Institutional Administrative Research Data",
+                                    "weight": 1
+                                },
+                                {
+                                    "title": "DSC – IT and Systems Data",
+                                    "weight": 1
+                                },
+                                {
+                                    "title": "DSC – Student and Academic Data",
+                                    "weight": 1
+                                }
+                            ]
+                        }
+                    ]
+                };
+            </script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.getElementById('loadJson').addEventListener('click', function(event) {
+                        window.scrollTo({
+                            top: 0,
+                            left: 0,
+                            behavior: "instant",
+                        });
+                        document.getElementById("original").style.display = "none";
+                        document.getElementById("new").style.display = "block";
+                        document.getElementById("holder").innerHTML = "";
+                        let chart = document.createElement("ilw-org-chart");
+                        chart.setAttribute("responsive", "true");
+                        chart.org = JSON.parse(document.getElementById("json").value);
+                        document.getElementById("holder").appendChild(chart);
+                    });
+                });
+            </script>
+        </head>
+
+        <body style="margin: 0; padding: 0">
 
         <main>
-            <div style="padding: 100px;">
-                <ilw-org-chart id="chart" responsive="true"></ilw-org-chart>
+            <ilw-content width="page"><h1>Org Chart</h1></ilw-content>
+            <div id="original" style="padding: 0 10px;">
+                <ilw-org-chart id="org-chart" responsive="true"></ilw-org-chart>
             </div>
+            <div id="new" style="display: none;">
+                <ilw-content width="page"><h2>New Org Chart Generated Below</h2></ilw-content>
+                <div id="holder"></div>
+            </div>
+            <ilw-content width="page">
+                <h2>JSON for Org Chart</h2>
+                <p><button id="loadJson" class="ilw-button">Generate New Chart based on JSON below</button> </p>
+                <p>If you run into issues with the chart not generating, chances are the JSON is not formatted correctly. Go to a <a href="https://jsonlint.com/" target="_blank">JSON Validator (opens in a new window)</a> to see if the JSON is valid.</p>
+                <p>Issues should be logged at <a href="https://github.com/web-illinois/ilw-org-chart/issues">the WIGG Web Component GitHub repository</a> and these will automatically be added to the Toolkit 3.0 project.</p>
+                <p><label for="json">JSON Input Value</label></p>
+                <textarea style="width: 90%; height: 800px;" id="json">
+{
+    "title": "Executive Sponsor",
+    "large": true,
+    "children": [
+        {
+            "title": "Institutional Data Governance Board",
+            "large": true,
+            "children": [
+                {
+                    "title": "DSC – Advancement, Alumni, and Foundation Data"
+                },
+                {
+                    "title": "DSC – Financial Data"
+                },
+                {
+                    "title": "DSC – Human Resources Data"
+                },
+                {
+                    "title": "DSC – Institutional Administrative Research Data",
+                    "weight": 1
+                },
+                {
+                    "title": "DSC – IT and Systems Data","weight": 1
+                },
+                {
+                    "title": "DSC – Student and Academic Data","weight": 1
+                }
+            ]
+        }
+    ]
+}
+            </textarea>
+            </ilw-content>
         </main>
 
-        <script type="module">
-            /**
-             *
-             * @type {Org}
-             */
-            const org = {
-                title: "Vice Chancellor for Student Affairs",
-                subtitle: "Interim",
-                large: true,
-                children: [
-                    {
-                        title: "Administrative Assistant",
-                        weight: -1,
-                    },
-                    {
-                        title: "Director, Advancement",
-                    },
-                    {
-                        title: "Director, Marketing and Communications",
-                    },
-                    {
-                        title: "Associate Vice Chancellor for Student Success and Engagement",
-                        weight: 1,
-                        large: true,
-                        children: [
-                            {
-                                title: "Sr. Assistant Dean, Fraternity and Sorority Affairs",
-                            },
-                            { title: "Director, Illinois Leadership Center" },
-                            { title: "Director, Minority Student Affairs" },
-                            {
-                                title: "Sr. Assistant Dean, New/Transfer Student Programs",
-                            },
-                            { title: "Director, Testing Center" },
-                            { title: "Director, The Career Center" },
-                        ],
-                    },
-                    {
-                        title: "Associate Vice Chancellor for Auxiliary, Health and Wellbeing",
-                        weight: 1,
-                        large: true,
-                        children: [
-                            { title: "Director, Counseling Center" },
-                            { title: "Director, McKinley Health Center" },
-                            { title: "Director, Parking*" },
-                            {
-                                title: "Director, Auxiliary Shared Technology Services",
-                            },
-                            { title: "Director, State Farm Center**" },
-                            { title: "Director, University Housing" },
-                            { title: "Director, Campus Recreation" },
-                            { title: "Director, Illini Union" },
-                        ],
-                    },
-                    {
-                        title: "Associate Vice Chancellor/Dean of Students",
-                        weight: 1,
-                        large: true,
-                        children: [
-                            { title: "Director, Student Conflict Resolution" },
-                            { title: "Director, Student Legal Services" },
-                            {
-                                title: "Director, Tenant Union and Campus and Community Student Services",
-                            },
-                        ],
-                    },
-                    {
-                        title: "Associate Vice Chancellor for the Office of Inclusion and Intercultural Relations",
-                        weight: 1,
-                        large: true,
-                        children: [
-                            {
-                                title: "Director, Asian American Cultural Center",
-                            },
-                            {
-                                title: "Director, Bruce D. Nesbitt African American Cultural Center",
-                            },
-                            { title: "Director, La Casa Cultural Latina" },
-                            {
-                                title: "Director, Diversity and Social Justice Education",
-                            },
-                            { title: "Director, International Education" },
-                            { title: "Director, LGBT Resource Center" },
-                            { title: "Director, Native American House" },
-                            { title: "Director, Women’s Resources Center" },
-                        ],
-                    },
-                    {
-                        title: "Senior Executive Director for Administrative Services",
-                        weight: 1,
-                        large: true,
-                        children: [
-                            { title: "Director, Assessment and Planning" },
-                            { title: "Director, Budget and Finance" },
-                            { title: "Director, Human Resources" },
-                        ],
-                    },
-                ],
-            };
-
-            const org2 = {
-                title: "Vice Chancellor for Research",
-                subtitle: "Interim",
-                large: true,
-                children: [
-                    {
-                        title: "Administrative Assistant",
-                        weight: -1,
-                    },
-                    {
-                        title: "Executive Associate Vice Chancellor/Chief of Staff",
-                    },
-                    {
-                        title: "Associate Vice Chancellor, HR and Finance",
-                        weight: 1,
-                    },
-                    {
-                        title: "Associate Vice Chancellor/Director, Division of Animal Resources",
-                    },
-
-                    {
-                        title: "Executive Director, Strategic Research Communications",
-                        weight: 1,
-                        children: [
-                            {
-                                title: "Proposal Development",
-                            },
-                        ],
-                    },
-                    {
-                        title: "Associate Vice Chancellor, Corporate Relations and Economic Development",
-                    },
-                    {
-                        title: "Senior Director, External Research Partnerships",
-                        weight: 1,
-                    },
-                    {
-                        title: "Associate Vice Chancellor, Humanities, Arts and Related Fields",
-                    },
-                    {
-                        title: "Associate Vice Chancellor",
-                        children: [
-                            {
-                                title: "Sponsored Programs Administration",
-                            },
-                        ],
-                    },
-                    {
-                        title: "Associate Vice Chancellor, Compliance",
-                        children: [
-                            {
-                                title: "Director, Institutional Animal Care and Use Committee",
-                                weight: 2,
-                            },
-                            {
-                                title: "Director, Division of Research Safety",
-                                weight: 2,
-                            },
-                            {
-                                title: "Director, Office for the Protection of Research Subjects",
-                                weight: 2,
-                            },
-                            {
-                                title: "Director, Agricultural Animal Care and Use Program",
-                                weight: 2,
-                            },
-                        ],
-                    },
-                ],
-            };
-
-            let chart = document.getElementById("chart");
-            chart.org = org2;
-        </script>
-    </body>
-</html>
+        </body>
+        </html>
