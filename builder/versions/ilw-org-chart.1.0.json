@@ -6,7 +6,7 @@
     "element-name": "ilw-org-chart",
     "description": "Organization chart web component for the Illinois Web Toolkit.",
     "builder-version": "1.0",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "date": "06/17/2026",
     "css": "https://cdn.toolkit.illinois.edu/ilw-org-chart/1.0/ilw-org-chart.css",
     "js": "https://cdn.toolkit.illinois.edu/ilw-org-chart/1.0/ilw-org-chart.js",
