@@ -40,7 +40,7 @@
     "devDependencies": {
         "@axe-core/playwright": "^4.10.2",
         "@playwright/test": "^1.54.1",
-        "@vitest/browser": "^3.2.4",
+        "@vitest/browser": "^4.1.9",
         "axe-html-reporter": "^2.2.11",
         "@illinois-toolkit/ilw-core": "^1.0.3",
         "playwright": "^1.54.1",
