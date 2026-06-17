@@ -423,6 +423,7 @@ export function measureOrgBoxes(
     container.style.left = "-9999px";
     container.style.top = hiddenTopOffset + "px";
     document.body.appendChild(container);
+    const containerRectTop = container.getBoundingClientRect().top;
 
     // Track measurements by org ID
     const orgSizes = new Map<number, OrgPlacement>();
@@ -469,7 +470,7 @@ export function measureOrgBoxes(
         orgSizes.set(org.id, {
             width: rect.width,
             height: rect.height,
-            top: rect.top - hiddenTopOffset,
+            top: rect.top - containerRectTop,
         });
 
         return orgContainer;
@@ -563,7 +564,7 @@ export function measureOrgBoxes(
                 orgSizes.set(id, {
                     width: rect.width,
                     height: rect.height,
-                    top: rect.top - hiddenTopOffset,
+                    top: rect.top - containerRectTop,
                 });
                 maxHeight = Math.max(maxHeight, rect.height);
             }
