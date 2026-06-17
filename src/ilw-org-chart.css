@@ -1,3 +1,8 @@
+ilw-org-chart {
+    display: block;
+    max-width: 100%;
+}
+
 .ilw-org-chart {
     background-color: var(--ilw-color--heading);
     color: var(--ilw-color--background);
