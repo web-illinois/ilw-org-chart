@@ -7,6 +7,11 @@
   "purpose": "Build an org chart",
   "customtemplates": [
     {
+      "name": "Development Only",
+      "path": "/component/ilw-org-chart/custom-dev/index.html",
+      "notes": "Use the guided custom builder for this component."
+    }
+    {
       "name": "Custom Template",
       "path": "/component/ilw-org-chart/custom/index.html",
       "notes": "Use the guided custom builder for this component."
