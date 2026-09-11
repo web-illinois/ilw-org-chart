@@ -1,0 +1,14 @@
+name: deploy_development_latest
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: web-illinois/toolkit-management/.github/workflows/component_deploy_development_latest.yml@main
+    with:
+      COMPONENT_NAME: ${{github.event.repository.name}}
+    secrets:
+      TOOLKIT_AWS_ACCESS_SECRET: ${{ secrets.TOOLKIT_AWS_ACCESS_SECRET }}
