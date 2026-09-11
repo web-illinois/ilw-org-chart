@@ -8,7 +8,7 @@
   "customtemplates": [
     {
       "name": "Custom Template",
-      "path": "/notes/orgchart/index.html",
+      "path": "/component/ilw-org-chart/custom/index.html",
       "notes": "Use the guided custom builder for this component."
     }
   ],
